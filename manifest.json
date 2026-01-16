@@ -1,8 +1,9 @@
 {
   "name": "Bubble Clock",
+  "id": "/bubble-clock"
   "short_name": "Bubble Clock",
   "description": "A beautiful fullscreen clock with customizable colors and modes",
-  "start_url": "./",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
