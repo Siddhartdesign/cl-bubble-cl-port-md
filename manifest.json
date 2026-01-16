@@ -1,6 +1,6 @@
 {
-  "name": "Big Time Clock",
-  "short_name": "Clock",
+  "name": "Bubble Clock",
+  "short_name": "Bubble Clock",
   "description": "A beautiful fullscreen clock with customizable colors and modes",
   "start_url": "./",
   "display": "standalone",
