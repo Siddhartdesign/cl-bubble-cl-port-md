@@ -3,8 +3,8 @@
   "short_name": "Bubble Clock",
   "id": "/bubble-clock",
   "description": "A beautiful fullscreen clock with customizable colors and modes",
-  "start_url": "/cl-bubble-cl-port-md/index.html",
-  "scope": "/cl-bubble-cl-port-md/"
+  "start_url": "./",
+  "scope": "/cl-bubble-cl-port-md/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
