@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Big Time Clock — Final</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Modak&family=Oi&family=Rubik+Mono+One&display=swap" rel="stylesheet">
+  
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<style>
+  :root{
+    --ghost-bg: rgba(255,255,255,0.18);
+    --ghost-small-bg: rgba(255,255,255,0.12);
+  }
+
+  body {
+    margin: 0;
+    height: 100vh;
+    background: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Modak', cursive;
+    overflow: hidden;
+  }
+
+  .clock {
+    font-size: 20.8vw;
+    display: flex;
+    gap: 0.04em;
+    align-items: center;
+    padding: 0 2.5vw;
+    overflow: visible;
+    line-height: 1;
+  }
+
+  .clock.portrait-mode {
+    flex-direction: column;
+    font-size: 38vw;
+    gap: 0;
+    padding: 0;
+  }
+
+  .clock.portrait-mode #main-colon {
+    display: none;
+  }
+
+  .clock.portrait-mode #seconds-block {
+    display: none !important;
+  }
+
+  .clock.portrait-mode.vertical-separator #main-colon {
+    display: block;
+    font-size: 0.15em;
+    transform: rotate(0deg);
+  }
+
+  #seconds-block { display: inline-flex; }
+
+  .pulse {
+    animation: pulse 1s linear infinite;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    60% { opacity: 0; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .hide-seconds #seconds-block { display: none; }
+
+  .ghost {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    background: var(--ghost-bg);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 120;
+    transition: background 0.2s ease;
+  }
+
+  body.light-bg .ghost {
+    background: rgba(0,0,0,0.15);
+  }
+
+  body.light-bg #ghost-color {
+    background: rgba(0,0,0,0.1);
+  }
+
+  #ghost-seconds { left: 18px; bottom: 18px; }
+  #ghost-pro { top: 18px; left: 18px; }
+
+  #ghost-color {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    width: 26px;
+    height: 26px;
+    background: var(--ghost-small-bg);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 130;
+    transition: background 0.2s ease;
+  }
+
+  #color-menu {
+    position: fixed;
+    right: 18px;
+    bottom: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 140;
+  }
+  #color-menu.active { opacity: 1; pointer-events: auto; }
+
+  .color-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.42);
+    cursor: pointer;
+  }
+
+  body.light-bg .color-dot {
+    border-color: rgba(0,0,0,0.3);
+  }
+
+  #pro-panel {
+    position: fixed;
+    left: 18px;
+    top: 64px;
+    width: 260px;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(7px);
+    font-family: Helvetica, Arial, sans-serif;
+    color: #fff;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    z-index: 150;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  body.light-bg #pro-panel {
+    background: rgba(0,0,0,0.05);
+    color: #000;
+  }
+
+  body.light-bg #pro-panel h4 {
+    color: #000;
+  }
+
+  body.light-bg .toggle-circle {
+    border-color: #000;
+  }
+
+  body.light-bg .toggle-circle.active::after {
+    background: #000;
+  }
+
+  #pro-panel.active { opacity: 1; pointer-events: auto; }
+
+  .pro-row {
+    margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .toggle-circle {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid white;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .toggle-circle.active::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+  }
+
+  .font-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .font-option {
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: background 0.2s ease;
+  }
+
+  body.light-bg .font-option {
+    background: rgba(0,0,0,0.1);
+  }
+
+  .font-option.active {
+    background: rgba(255,255,255,0.3);
+  }
+
+  body.light-bg .font-option.active {
+    background: rgba(0,0,0,0.3);
+  }
+
+  .indent {
+    padding-left: 12px;
+    font-size: 13px;
+    opacity: 0.9;
+  }
+
+  #freeze-zone {
+    position: fixed;
+    bottom: 140px;
+    left: 20px;
+    width: 120px;
+    height: 120px;
+    z-index: 200;
+    background: transparent;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="clock" id="clock">
+  <span id="hours">00</span>
+  <span id="main-colon">:</span>
+  <span id="minutes">00</span>
+  <span id="seconds-block">
+    <span id="sec-colon">:</span>
+    <span id="seconds">00</span>
+  </span>
+</div>
+
+<div id="ghost-pro" class="ghost"></div>
+<div id="ghost-seconds" class="ghost"></div>
+<div id="ghost-color"></div>
+
+<div id="freeze-zone"></div>
+
+<div id="color-menu">
+  <div class="color-dot" data-preset="white-black" style="background:#fff"></div>
+  <div class="color-dot" data-preset="black-white" style="background:#000"></div>
+  <div class="color-dot" data-preset="cyan-dark" style="background:#00eaff"></div>
+  <div class="color-dot" data-preset="neon-green" style="background:#39ff14"></div>
+  <div class="color-dot" data-preset="hot-pink" style="background:#ff0077"></div>
+  <div class="color-dot" data-preset="orange" style="background:#ff9100"></div>
+  <div class="color-dot" data-preset="purple" style="background:#b400ff"></div>
+  <div class="color-dot" data-preset="google-mix" style="background:linear-gradient(135deg, #4285f4 0%, #ea4335 50%, #fbbc04 100%)"></div>
+  <div class="color-dot" data-preset="pastel-dream" style="background:linear-gradient(135deg, #ffd1dc 0%, #b4e7ce 50%, #c7ceea 100%)"></div>
+  <div class="color-dot" data-preset="sunset-glow" style="background:linear-gradient(135deg, #ff6b9d 0%, #ffa07a 50%, #ffd700 100%)"></div>
+  <div class="color-dot" data-preset="ocean-breeze" style="background:linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #b4f8c8 100%)"></div>
+</div>
+
+<div id="pro-panel">
+  <h4>Settings</h4>
+
+  <div class="pro-row">
+    <div>12-Hour Format</div>
+    <div id="toggle12" class="toggle-circle"></div>
+  </div>
+
+  <div class="pro-row">
+    <div>Portrait Mode</div>
+    <div id="togglePortrait" class="toggle-circle"></div>
+  </div>
+
+  <div class="pro-row indent">
+    <div>Vertical Separator</div>
+    <div id="toggleVerticalSep" class="toggle-circle"></div>
+  </div>
+
+  <h4>Typeface</h4>
+  <div class="font-selector">
+    <div class="font-option" data-font="Modak">Default</div>
+    <div class="font-option" data-font="Oi">Oi</div>
+    <div class="font-option" data-font="Rubik Mono One">Rubik</div>
+  </div>
+
+  <h4>Pro Features</h4>
+  <div class="pro-row"><div>Pro Color Palettes</div><button>Preview</button></div>
+  <div class="pro-row"><div>Glass-Morphism</div><button>Preview</button></div>
+  <div class="pro-row"><div>Buy Me a Coffee</div><a href="https://buymeacoffee.com" target="_blank">Buy</a></div>
+</div>
+
+<script>
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
+
+const colorPresets = {
+  "white-black": { h: "#fff", m: "#fff", s: "#fff", bg: "#000", light: false },
+  "black-white": { h: "#000", m: "#000", s: "#000", bg: "#fff", light: true },
+  "cyan-dark": { h: "#00eaff", m: "#00eaff", s: "#00eaff", bg: "#00141a", light: false },
+  "neon-green": { h: "#39ff14", m: "#39ff14", s: "#39ff14", bg: "#061a00", light: false },
+  "hot-pink": { h: "#ff0077", m: "#ff0077", s: "#ff0077", bg: "#1a0010", light: false },
+  "orange": { h: "#ff9100", m: "#ff9100", s: "#ff9100", bg: "#1a0d00", light: false },
+  "purple": { h: "#b400ff", m: "#b400ff", s: "#b400ff", bg: "#15001a", light: false },
+  "google-mix": { h: "#4285f4", m: "#ea4335", s: "#fbbc04", bg: "#f8f9fa", light: true },
+  "pastel-dream": { h: "#ffa6c9", m: "#87ceeb", s: "#b4a7d6", bg: "#fef9f3", light: true },
+  "sunset-glow": { h: "#ff6b9d", m: "#ffa07a", s: "#ffd700", bg: "#2a1a1f", light: false },
+  "ocean-breeze": { h: "#4facfe", m: "#00f2fe", s: "#90ee90", bg: "#0a1628", light: false }
+};
+
+let use24h = localStorage.getItem("use24h") !== "false";
+let secondsOn = localStorage.getItem("secondsOn") !== "false";
+let portraitMode = localStorage.getItem("portraitMode") === "true";
+let verticalSeparator = localStorage.getItem("verticalSeparator") === "true";
+let currentFont = localStorage.getItem("clockFont") || "Modak";
+let currentPreset = localStorage.getItem("colorPreset") || "white-black";
+
+let screenshotMode = true;
+let frozen = false;
+let frozenTime = null;
+
+const hoursEl = document.getElementById("hours");
+const minutesEl = document.getElementById("minutes");
+const secondsEl = document.getElementById("seconds");
+const mainColon = document.getElementById("main-colon");
+const clockEl = document.getElementById("clock");
+
+function applyFont() {
+  document.body.style.fontFamily = `'${currentFont}', cursive`;
+  document.querySelectorAll('.font-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.font === currentFont);
+  });
+}
+
+function applyColorPreset() {
+  const preset = colorPresets[currentPreset];
+  if (!preset) return;
+  
+  hoursEl.style.color = preset.h;
+  minutesEl.style.color = preset.m;
+  secondsEl.style.color = preset.s;
+  mainColon.style.color = preset.m;
+  document.getElementById("sec-colon").style.color = preset.s;
+  document.body.style.background = preset.bg;
+  
+  if (preset.light) {
+    document.body.classList.add('light-bg');
+  } else {
+    document.body.classList.remove('light-bg');
+  }
+}
+
+function updateClock(){
+  const now = frozen && frozenTime ? frozenTime : new Date();
+
+  let h = now.getHours();
+  let m = now.getMinutes();
+  let s = now.getSeconds();
+
+  if (!use24h) h = (h % 12) || 12;
+
+  hoursEl.textContent = String(h);
+  minutesEl.textContent = String(m).padStart(2,"0");
+  secondsEl.textContent = String(s).padStart(2,"0");
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+function applyAnimations(){
+  if (frozen) {
+    secondsEl.classList.remove("pulse");
+    mainColon.classList.remove("pulse");
+    return;
+  }
+  
+  if (secondsOn){
+    clockEl.classList.remove("hide-seconds");
+    mainColon.classList.remove("pulse");
+    secondsEl.classList.add("pulse");
+  } else {
+    clockEl.classList.add("hide-seconds");
+    secondsEl.classList.remove("pulse");
+    mainColon.classList.add("pulse");
+  }
+}
+
+function applyPortraitMode(){
+  if (portraitMode) {
+    clockEl.classList.add("portrait-mode");
+  } else {
+    clockEl.classList.remove("portrait-mode");
+  }
+  
+  if (verticalSeparator && portraitMode) {
+    clockEl.classList.add("vertical-separator");
+  } else {
+    clockEl.classList.remove("vertical-separator");
+  }
+}
+
+applyFont();
+applyColorPreset();
+applyAnimations();
+applyPortraitMode();
+
+document.getElementById("ghost-seconds").addEventListener("click",()=>{
+  secondsOn = !secondsOn;
+  localStorage.setItem("secondsOn", secondsOn);
+  applyAnimations();
+});
+
+const ghostColorBtn = document.getElementById("ghost-color");
+const colorMenuEl = document.getElementById("color-menu");
+
+ghostColorBtn.addEventListener("click",()=>{
+  colorMenuEl.classList.add("active");
+  clearTimeout(window.cm);
+  window.cm = setTimeout(()=>colorMenuEl.classList.remove("active"), 5000);
+});
+
+document.querySelectorAll(".color-dot").forEach(dot=>{
+  dot.addEventListener("click",()=>{
+    currentPreset = dot.dataset.preset;
+    localStorage.setItem("colorPreset", currentPreset);
+    applyColorPreset();
+    colorMenuEl.classList.remove("active");
+  });
+});
+
+const ghostProBtn = document.getElementById("ghost-pro");
+const proPanelEl = document.getElementById("pro-panel");
+
+ghostProBtn.addEventListener("click",()=>{
+  proPanelEl.classList.toggle("active");
+});
+
+document.addEventListener("click",(e)=>{
+  if (!proPanelEl.contains(e.target) && !ghostProBtn.contains(e.target)){
+    proPanelEl.classList.remove("active");
+  }
+});
+
+const toggle12 = document.getElementById("toggle12");
+if (!use24h) toggle12.classList.add("active");
+
+toggle12.addEventListener("click",()=>{
+  use24h = !use24h;
+  localStorage.setItem("use24h", use24h);
+  toggle12.classList.toggle("active");
+  updateClock();
+});
+
+const togglePortrait = document.getElementById("togglePortrait");
+if (portraitMode) togglePortrait.classList.add("active");
+
+togglePortrait.addEventListener("click",()=>{
+  portraitMode = !portraitMode;
+  localStorage.setItem("portraitMode", portraitMode);
+  togglePortrait.classList.toggle("active");
+  applyPortraitMode();
+});
+
+const toggleVerticalSep = document.getElementById("toggleVerticalSep");
+if (verticalSeparator) toggleVerticalSep.classList.add("active");
+
+toggleVerticalSep.addEventListener("click",()=>{
+  verticalSeparator = !verticalSeparator;
+  localStorage.setItem("verticalSeparator", verticalSeparator);
+  toggleVerticalSep.classList.toggle("active");
+  applyPortraitMode();
+});
+
+document.querySelectorAll('.font-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    currentFont = opt.dataset.font;
+    localStorage.setItem("clockFont", currentFont);
+    applyFont();
+  });
+});
+
+document.getElementById("freeze-zone").addEventListener("click", () => {
+  if (!screenshotMode) return;
+  const input = prompt("Freeze time (HH:MM:SS)");
+  if (!input || !/^\d\d[:\s]\d\d[:\s]\d\d$/.test(input)) return;
+
+  const [h, m, s] = input.split(/[:\s]/).map(Number);
+
+  const custom = new Date();
+  custom.setHours(h, m, s, 0);
+
+  frozen = true;
+  frozenTime = custom;
+
+  secondsEl.classList.remove("pulse");
+  mainColon.classList.remove("pulse");
+
+  updateClock();
+});
+
+document.getElementById("freeze-zone").addEventListener("dblclick", () => {
+  if (!screenshotMode) return;
+  frozen = false;
+  frozenTime = null;
+  applyAnimations();
+});
+
+</script>
+
+</body>
+</html>
