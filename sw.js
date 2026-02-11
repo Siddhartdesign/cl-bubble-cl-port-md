@@ -1,4 +1,4 @@
-const CACHE_NAME = 'big-time-clock-v1';
+const CACHE_NAME = 'big-time-clock-v2';
 const urlsToCache = [
   './',
   './index.html',
